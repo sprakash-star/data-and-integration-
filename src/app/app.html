@@ -1,0 +1,79 @@
+<div class="shell" [class.collapsed]="sidebarCollapsed()">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect width="24" height="24" rx="4" fill="#1a56db"/>
+          <path d="M6 12L10 16L18 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        @if (!sidebarCollapsed()) {
+          <span class="logo-text">VENDASTA</span>
+        }
+      </div>
+      <button class="sidebar-toggle" (click)="sidebarCollapsed.set(!sidebarCollapsed())">
+        <span class="material-icons">{{ sidebarCollapsed() ? 'menu' : 'menu_open' }}</span>
+      </button>
+    </div>
+
+    @if (!sidebarCollapsed()) {
+      <div class="account-info">
+        <span class="material-icons account-icon">location_on</span>
+        <div class="account-text">
+          <div class="account-name">Apex Home Services</div>
+          <div class="account-address">1250 El Camino Real, Suite 200</div>
+        </div>
+      </div>
+    }
+
+    <nav class="nav">
+      <a class="nav-item">
+        <span class="material-icons">chat_bubble_outline</span>
+        @if (!sidebarCollapsed()) { <span>New chat</span> }
+      </a>
+      <a class="nav-item">
+        <span class="material-icons">auto_awesome</span>
+        @if (!sidebarCollapsed()) { <span>Vibe studio</span> }
+      </a>
+      <a class="nav-item">
+        <span class="material-icons">dashboard</span>
+        @if (!sidebarCollapsed()) { <span>Control center</span> }
+      </a>
+      <a class="nav-item">
+        <span class="material-icons">people</span>
+        @if (!sidebarCollapsed()) { <span>AI employees</span> }
+      </a>
+      <a class="nav-item active" routerLink="/integrations">
+        <span class="material-icons">apps</span>
+        @if (!sidebarCollapsed()) { <span>Apps</span> }
+      </a>
+      <a class="nav-item">
+        <span class="material-icons">bolt</span>
+        @if (!sidebarCollapsed()) { <span>Automations</span> }
+      </a>
+      <a class="nav-item">
+        <span class="material-icons">storage</span>
+        @if (!sidebarCollapsed()) { <span>Data</span> }
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item switch-admin">
+        <span class="material-icons">swap_horiz</span>
+        @if (!sidebarCollapsed()) { <span>Switch to admin</span> }
+      </button>
+      <div class="user-profile">
+        <div class="avatar">SP</div>
+        @if (!sidebarCollapsed()) {
+          <div class="user-info">
+            <div class="user-name">Siva Prakash</div>
+            <div class="user-role">Administrator</div>
+          </div>
+        }
+      </div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <router-outlet />
+  </main>
+</div>

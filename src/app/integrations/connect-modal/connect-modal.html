@@ -1,0 +1,97 @@
+<div class="modal-shell">
+  <div class="modal-header">
+    <div class="modal-title-row">
+      <div class="modal-icon" [style.background]="integration.iconBg">{{ integration.icon.toUpperCase() }}</div>
+      <div>
+        <div class="modal-title">Connect {{ integration.name }}</div>
+        <div class="modal-subtitle">{{ integration.description }}</div>
+      </div>
+    </div>
+    <button class="close-btn" (click)="cancel()">
+      <span class="material-icons">close</span>
+    </button>
+  </div>
+
+  <div class="step-indicator">
+    @for (s of [1,2,3]; track s) {
+      <div class="step" [class.active]="step() === s" [class.done]="step() > s">
+        @if (step() > s) {
+          <span class="material-icons check">check</span>
+        } @else {
+          {{ s }}
+        }
+      </div>
+      @if (s < 3) { <div class="step-line" [class.done]="step() > s"></div> }
+    }
+  </div>
+
+  <div class="modal-body">
+    @switch (step()) {
+      @case (1) {
+        <div class="step-content">
+          <h3 class="step-heading">Review permissions</h3>
+          <p class="step-desc">{{ integration.name }} will be granted access to the following data on behalf of your account:</p>
+          <ul class="permissions-list">
+            @for (p of permissions; track p) {
+              <li>
+                <span class="material-icons perm-icon">check_circle</span>
+                {{ p }}
+              </li>
+            }
+          </ul>
+          <div class="trust-note">
+            <span class="material-icons">lock</span>
+            Your data is encrypted and never shared with third parties.
+          </div>
+        </div>
+      }
+      @case (2) {
+        <div class="step-content oauth-step">
+          @if (oauthLoading()) {
+            <mat-spinner diameter="40"></mat-spinner>
+            <p class="oauth-msg">Connecting to {{ integration.name }}...</p>
+            <p class="oauth-sub">Waiting for authorization. This window will update automatically.</p>
+          } @else {
+            <div class="oauth-success">
+              <span class="material-icons success-icon">check_circle</span>
+              <p class="oauth-msg">Connected as <strong>Apex Home Services</strong></p>
+              <p class="oauth-sub">Your {{ integration.name }} account has been authorized successfully.</p>
+            </div>
+          }
+        </div>
+      }
+      @case (3) {
+        <div class="step-content">
+          <h3 class="step-heading">Choose data to sync</h3>
+          <p class="step-desc">Select which data types to include. You can change these settings later.</p>
+          <div class="fields-list">
+            @for (field of fields(); track field.name; let i = $index) {
+              <div class="field-row" (click)="toggleField(i)">
+                <div class="field-toggle" [class.on]="field.enabled">
+                  <div class="toggle-knob"></div>
+                </div>
+                <div class="field-info">
+                  <div class="field-name">{{ field.name }}</div>
+                  <div class="field-meta">{{ field.type }} · Used by <strong>{{ field.usedBy }}</strong></div>
+                </div>
+                <span class="field-direction badge" [class.badge-connected]="field.enabled" [class.badge-not-connected]="!field.enabled">
+                  {{ field.direction === 'both' ? '↕ read/write' : '↓ read' }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+    <button class="btn btn-primary" (click)="nextStep()" [disabled]="step() === 2 && oauthLoading()">
+      @if (step() === 1) { Authorize → }
+      @else if (step() === 2 && oauthLoading()) { Connecting... }
+      @else if (step() === 2) { Continue → }
+      @else { Finish setup }
+    </button>
+  </div>
+</div>

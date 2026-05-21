@@ -1,0 +1,600 @@
+<!-- ════ INLINE CONNECT MODAL ════ -->
+@if (showConnectModal()) {
+  @if (integration(); as ig) {
+  <div class="modal-overlay" (click)="closeConnectModal()">
+    <div class="modal-shell" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-row">
+          <div class="modal-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+          <div>
+            <div class="modal-title">Connect {{ ig.name }}</div>
+            <div class="modal-subtitle">{{ ig.description }}</div>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeConnectModal()">
+          <span class="material-icons">close</span>
+        </button>
+      </div>
+
+      <div class="step-indicator">
+        @for (s of [1,2,3]; track s) {
+          <div class="step-dot" [class.active]="connectStep() === s" [class.done]="connectStep() > s">
+            @if (connectStep() > s) { <span class="material-icons" style="font-size:14px">check</span> }
+            @else { {{ s }} }
+          </div>
+          @if (s < 3) { <div class="step-line" [class.done]="connectStep() > s"></div> }
+        }
+      </div>
+
+      <div class="modal-body">
+        @switch (connectStep()) {
+          @case (1) {
+            <h3 class="modal-step-heading">Review permissions</h3>
+            <p class="modal-step-desc">{{ ig.name }} will be granted access to the following data on behalf of your account:</p>
+            <ul class="perm-list">
+              @for (p of connectPermissions; track p) {
+                <li><span class="material-icons perm-check">check_circle</span>{{ p }}</li>
+              }
+            </ul>
+            <div class="trust-note">
+              <span class="material-icons">lock</span>
+              Your data is encrypted and never shared with third parties.
+            </div>
+          }
+          @case (2) {
+            <div class="oauth-step">
+              @if (oauthLoading()) {
+                <div class="oauth-spinner"></div>
+                <p class="oauth-msg">Connecting to {{ ig.name }}...</p>
+                <p class="oauth-sub">Waiting for authorization in the pop-up window.</p>
+              } @else {
+                <span class="material-icons oauth-success-icon">check_circle</span>
+                <p class="oauth-msg">Connected as <strong>Apex Home Services</strong></p>
+                <p class="oauth-sub">Your {{ ig.name }} account has been authorized successfully.</p>
+              }
+            </div>
+          }
+          @case (3) {
+            <h3 class="modal-step-heading">Choose data to sync</h3>
+            <p class="modal-step-desc">Select which data types to include. You can change these later in Settings.</p>
+            <div class="modal-fields">
+              @for (field of dataFields(); track field.name; let i = $index) {
+                <div class="modal-field-row" (click)="toggleDataField(i)">
+                  <div class="field-toggle" [class.on]="field.enabled"><div class="toggle-knob"></div></div>
+                  <div class="field-info">
+                    <div class="field-name">{{ field.name }}</div>
+                    <div class="field-meta">{{ field.type }} · Used by <strong>{{ field.usedBy }}</strong></div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeConnectModal()">Cancel</button>
+        <button class="btn btn-primary" (click)="connectNextStep()" [disabled]="connectStep() === 2 && oauthLoading()">
+          @if (connectStep() === 1) { Authorize → }
+          @else if (connectStep() === 2 && oauthLoading()) { Connecting... }
+          @else if (connectStep() === 2) { Continue → }
+          @else { Finish setup }
+        </button>
+      </div>
+    </div>
+  </div>
+  } <!-- end @if integration -->
+} <!-- end @if showConnectModal -->
+
+@if (integration(); as ig) {
+  <div class="detail-page">
+
+    <!-- ── BACK NAV ── -->
+    <div class="breadcrumb">
+      <a routerLink="/integrations" class="back-link">
+        <span class="material-icons">arrow_back</span> Apps / Integrations
+      </a>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         STATE: NOT CONNECTED — Discovery
+    ════════════════════════════════════════ -->
+    @if (ig.status === 'not-connected') {
+      <div class="discovery-layout">
+        <div class="discovery-main">
+          <div class="detail-header">
+            <div class="header-identity">
+              <div class="header-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+              <div>
+                <h1 class="detail-name">{{ ig.name }}</h1>
+                <p class="detail-desc">{{ ig.description }}</p>
+              </div>
+            </div>
+            <span class="badge badge-not-connected"><span class="dot"></span> Not connected</span>
+          </div>
+
+          <div class="section">
+            <h2 class="section-title">What this integration unlocks</h2>
+            <div class="capability-cards">
+              @for (cap of discoveryCapabilities(); track cap.name) {
+                <div class="capability-card">
+                  <span class="material-icons cap-icon">{{ cap.icon }}</span>
+                  <div class="cap-name">{{ cap.name }}</div>
+                  <div class="cap-desc">{{ cap.description }}</div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="section">
+            <h2 class="section-title">Data that will sync</h2>
+            <div class="card">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Data type</th>
+                    <th>Direction</th>
+                    <th>Used by AI</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (field of dataFields(); track field.name) {
+                    <tr>
+                      <td class="field-name-cell">{{ field.name }}</td>
+                      <td><span class="direction-badge">{{ field.direction === 'both' ? '↕ read / write' : '↓ read only' }}</span></td>
+                      <td class="ai-tag">{{ field.usedBy }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="discovery-panel">
+          <div class="action-panel card">
+            <div class="action-panel-header">
+              <div class="panel-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+              <div>
+                <div class="panel-title">{{ ig.name }}</div>
+                <div class="panel-sub">Ready to connect</div>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-full" (click)="openConnectModal()">
+              <span class="material-icons">link</span> Connect {{ ig.name }}
+            </button>
+            <div class="setup-meta">
+              <span class="material-icons">schedule</span> ~2 minute setup
+            </div>
+            <div class="requirements">
+              <div class="req-title">Requirements</div>
+              <ul class="req-list">
+                <li><span class="material-icons">check</span> Active {{ ig.name }} account</li>
+                <li><span class="material-icons">check</span> Admin or Editor permissions</li>
+                <li><span class="material-icons">check</span> Business page access</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ════════════════════════════════════════
+         STATE: SYNCING — Progress
+    ════════════════════════════════════════ -->
+    @if (ig.status === 'syncing') {
+      <div class="syncing-layout">
+        <div class="syncing-card card">
+          <div class="syncing-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+          <h2 class="syncing-title">Setting up {{ ig.name }} integration...</h2>
+          <p class="syncing-sub">We're importing your data and connecting it to AI. This usually takes 1–2 minutes.</p>
+
+          <div class="progress-bar-wrap">
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="syncProgress()"></div>
+            </div>
+            <span class="progress-pct">{{ syncProgress() | number:'1.0-0' }}%</span>
+          </div>
+
+          <div class="sync-steps">
+            @for (s of syncSteps; track s.label; let i = $index) {
+              <div class="sync-step" [class.done]="syncStep() > i" [class.active]="syncStep() === i">
+                @if (syncStep() > i) {
+                  <span class="material-icons step-check">check_circle</span>
+                } @else if (syncStep() === i) {
+                  <span class="step-spinner"></span>
+                } @else {
+                  <span class="step-circle"></span>
+                }
+                <span>{{ s.label }}</span>
+              </div>
+            }
+          </div>
+
+          <button class="btn btn-ghost" (click)="runInBackground()">
+            <span class="material-icons">open_in_background</span> Run in background
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- ════════════════════════════════════════
+         STATE: CONNECTED — Full Dashboard
+    ════════════════════════════════════════ -->
+    @if (ig.status === 'connected') {
+      <div class="connected-layout">
+        <div class="detail-header connected-header">
+          <div class="header-identity">
+            <div class="header-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+            <div>
+              <h1 class="detail-name">{{ ig.name }}</h1>
+              <p class="detail-desc">{{ ig.description }}</p>
+            </div>
+          </div>
+          <div class="header-right">
+            <span class="badge badge-connected"><span class="dot"></span> Connected</span>
+            <span class="last-sync">Last synced {{ lastSyncLabel() }}</span>
+            <div class="manage-menu">
+              <button class="btn btn-secondary manage-btn" [matMenuTriggerFor]="manageMenu">
+                Manage <span class="material-icons">expand_more</span>
+              </button>
+              <mat-menu #manageMenu="matMenu">
+                <button mat-menu-item (click)="syncNow()">
+                  <span class="material-icons">sync</span> Sync now
+                </button>
+                <button mat-menu-item (click)="activeTab.set(2)">
+                  <span class="material-icons">settings</span> Settings
+                </button>
+                <button mat-menu-item class="danger-item" (click)="confirmDisconnect()">
+                  <span class="material-icons">link_off</span> Disconnect
+                </button>
+              </mat-menu>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Records synced</div>
+            <div class="stat-value">{{ ig.recordCount | number }}</div>
+            <div class="stat-trend positive">+28.4% vs last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Daily syncs</div>
+            <div class="stat-value">{{ ig.dailySyncs | number }}</div>
+            <div class="stat-trend positive">+12.1% vs last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">AI queries</div>
+            <div class="stat-value">{{ ig.aiQueries | number }}</div>
+            <div class="stat-trend positive">+34.7% vs last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Knowledge score</div>
+            <div class="stat-value">{{ ig.knowledgeScore }}<span class="stat-unit">/100</span></div>
+            <div class="stat-trend neutral">Coverage: Strong</div>
+          </div>
+        </div>
+
+        <mat-tab-group [(selectedIndex)]="activeTab" animationDuration="150ms" class="detail-tabs">
+
+          <!-- OVERVIEW TAB -->
+          <mat-tab label="Overview">
+            <div class="tab-content">
+              <div class="tab-grid">
+                <div>
+                  <h3 class="section-title">AI capabilities enabled</h3>
+                  <div class="capability-list">
+                    @for (cap of aiCapabilities(); track cap.name) {
+                      <div class="cap-row" [class.disabled]="!cap.enabled">
+                        <span class="material-icons cap-icon-sm" [class.enabled]="cap.enabled">{{ cap.icon }}</span>
+                        <div>
+                          <div class="cap-row-name">{{ cap.name }}</div>
+                          <div class="cap-row-desc">{{ cap.description }}</div>
+                        </div>
+                        @if (cap.enabled) {
+                          <span class="badge badge-connected" style="margin-left:auto">Active</span>
+                        } @else {
+                          <span class="badge badge-not-connected" style="margin-left:auto">Paused</span>
+                        }
+                      </div>
+                    }
+                  </div>
+                </div>
+                <div>
+                  <h3 class="section-title">Connected account</h3>
+                  <div class="card connected-account-card">
+                    <div class="account-row">
+                      <div class="account-avatar" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+                      <div>
+                        <div class="account-biz">Apex Home Services</div>
+                        <div class="account-meta">Connected by {{ ig.connectedBy }} · {{ ig.connectedOn }}</div>
+                      </div>
+                      <span class="badge badge-connected" style="margin-left:auto">Active</span>
+                    </div>
+                  </div>
+
+                  <h3 class="section-title" style="margin-top: 24px">Quick actions</h3>
+                  <div class="quick-actions">
+                    <button class="btn btn-secondary" (click)="syncNow()">
+                      <span class="material-icons">sync</span> Sync now
+                    </button>
+                    <button class="btn btn-secondary" (click)="activeTab.set(3)">
+                      <span class="material-icons">preview</span> Preview data
+                    </button>
+                    <button class="btn btn-secondary" (click)="activeTab.set(2)">
+                      <span class="material-icons">settings</span> Settings
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- SYNC ACTIVITY TAB -->
+          <mat-tab label="Sync Activity">
+            <div class="tab-content">
+              <h3 class="section-title">Recent sync history</h3>
+              <div class="card">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Records</th>
+                      <th>Duration</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (log of syncLogs(); track log.id) {
+                      <tr [class.error-row]="log.status === 'error'">
+                        <td>{{ formatTimestamp(log.timestamp) }}</td>
+                        <td>{{ log.status === 'success' ? (log.recordsProcessed | number) : '—' }}</td>
+                        <td>{{ log.duration }}s</td>
+                        <td>
+                          <span class="log-badge" [class]="syncLogStatusClass(log.status)">
+                            {{ log.status }}
+                          </span>
+                          @if (log.errorMessage) {
+                            <span class="log-error-msg"> · {{ log.errorMessage }}</span>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- SETTINGS TAB -->
+          <mat-tab label="Settings">
+            <div class="tab-content">
+              <div class="settings-section">
+                <h3 class="section-title">Sync frequency</h3>
+                <div class="card settings-card">
+                  <div class="setting-row">
+                    <div>
+                      <div class="setting-label">Auto-sync interval</div>
+                      <div class="setting-desc">How often data is pulled from {{ ig.name }}</div>
+                    </div>
+                    <select class="setting-select">
+                      <option>Every 30 minutes</option>
+                      <option>Every hour</option>
+                      <option>Every 6 hours</option>
+                      <option>Daily</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="settings-section">
+                <h3 class="section-title">Data fields</h3>
+                <div class="card settings-card">
+                  @for (field of dataFields(); track field.name; let i = $index) {
+                    <div class="setting-row" [class.border-top]="i > 0">
+                      <div>
+                        <div class="setting-label">{{ field.name }}</div>
+                        <div class="setting-desc">{{ field.type }} · Used by {{ field.usedBy }}</div>
+                      </div>
+                      <div class="field-toggle" [class.on]="field.enabled" (click)="dataFields.update(f => f.map((x,j) => j===i ? {...x, enabled: !x.enabled} : x))">
+                        <div class="toggle-knob"></div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="settings-section danger-zone">
+                <h3 class="section-title">Danger zone</h3>
+                <div class="card settings-card">
+                  <div class="setting-row">
+                    <div>
+                      <div class="setting-label">Disconnect {{ ig.name }}</div>
+                      <div class="setting-desc">Stops all syncing and pauses AI features using this data.</div>
+                    </div>
+                    <button class="btn btn-danger" (click)="confirmDisconnect()">
+                      <span class="material-icons">link_off</span> Disconnect
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-tab>
+
+          <!-- DATA PREVIEW TAB -->
+          <mat-tab label="Data Preview">
+            <div class="tab-content">
+              <h3 class="section-title">Sample records visible to AI</h3>
+              <div class="card">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Field</th>
+                      <th>Sample value</th>
+                      <th>Used by</th>
+                      <th>Last updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Page followers</td>
+                      <td>4,821</td>
+                      <td><span class="ai-tag">Social AI</span></td>
+                      <td>{{ lastSyncLabel() }}</td>
+                    </tr>
+                    <tr>
+                      <td>Avg post reach</td>
+                      <td>1,240 / post</td>
+                      <td><span class="ai-tag">Social AI</span></td>
+                      <td>{{ lastSyncLabel() }}</td>
+                    </tr>
+                    <tr>
+                      <td>Ad spend (MTD)</td>
+                      <td>$1,840</td>
+                      <td><span class="ai-tag">Campaigns AI</span></td>
+                      <td>{{ lastSyncLabel() }}</td>
+                    </tr>
+                    <tr>
+                      <td>Inbox messages</td>
+                      <td>23 unread</td>
+                      <td><span class="ai-tag">Conversations AI</span></td>
+                      <td>{{ lastSyncLabel() }}</td>
+                    </tr>
+                    <tr>
+                      <td>Top performing post</td>
+                      <td>"Summer promo — 847 reactions"</td>
+                      <td><span class="ai-tag">Social AI</span></td>
+                      <td>{{ lastSyncLabel() }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </mat-tab>
+
+        </mat-tab-group>
+      </div>
+
+      <!-- DISCONNECT CONFIRMATION OVERLAY -->
+      @if (showDisconnectConfirm()) {
+        <div class="overlay" (click)="cancelDisconnect()">
+          <div class="confirm-modal card" (click)="$event.stopPropagation()">
+            <div class="confirm-icon">
+              <span class="material-icons warn-icon">link_off</span>
+            </div>
+            <h3 class="confirm-title">Disconnect {{ ig.name }}?</h3>
+            <p class="confirm-desc">This will immediately:</p>
+            <ul class="confirm-list">
+              <li><span class="material-icons">stop</span> Stop all data syncing</li>
+              <li><span class="material-icons">pause_circle</span> Pause {{ aiCapabilities().filter(c => c.enabled).length }} active AI capabilities</li>
+              <li><span class="material-icons">cloud_off</span> Remove {{ ig.name }} from AI knowledge</li>
+            </ul>
+            <p class="confirm-note">Your existing synced data will be retained for 30 days.</p>
+            <div class="confirm-actions">
+              <button class="btn btn-secondary" (click)="cancelDisconnect()">Cancel</button>
+              <button class="btn btn-danger" (click)="disconnect()">
+                <span class="material-icons">link_off</span> Disconnect
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ════════════════════════════════════════
+         STATE: ERROR
+    ════════════════════════════════════════ -->
+    @if (ig.status === 'error') {
+      <div class="connected-layout">
+        <div class="detail-header connected-header">
+          <div class="header-identity">
+            <div class="header-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+            <div>
+              <h1 class="detail-name">{{ ig.name }}</h1>
+              <p class="detail-desc">{{ ig.description }}</p>
+            </div>
+          </div>
+          <span class="badge badge-error"><span class="dot"></span> Sync error</span>
+        </div>
+
+        <div class="alert-banner alert-error">
+          <span class="material-icons">error_outline</span>
+          <div class="alert-body">
+            <strong>Authorization expired</strong> — {{ ig.errorMessage }}
+            AI features using {{ ig.name }} data are currently paused.
+          </div>
+          <button class="btn btn-primary alert-action-btn" (click)="reconnect()">
+            Reconnect now →
+          </button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Records synced</div>
+            <div class="stat-value">{{ ig.recordCount | number }}</div>
+            <div class="stat-trend neutral">Before disconnect</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Daily syncs</div>
+            <div class="stat-value">{{ ig.dailySyncs | number }}</div>
+            <div class="stat-trend neutral">Paused</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">AI queries</div>
+            <div class="stat-value">{{ ig.aiQueries | number }}</div>
+            <div class="stat-trend negative">Paused</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Knowledge score</div>
+            <div class="stat-value">{{ ig.knowledgeScore }}<span class="stat-unit">/100</span></div>
+            <div class="stat-trend negative">Degrading</div>
+          </div>
+        </div>
+
+        <div class="error-detail card">
+          <h3 class="section-title">Error details</h3>
+          <div class="error-body">
+            <div class="error-meta">
+              <span class="material-icons">error</span>
+              <div>
+                <div class="error-type">OAuth token expired</div>
+                <div class="error-time">Detected May 21, 2026 at 09:23 AM</div>
+              </div>
+            </div>
+            <p class="error-explanation">
+              {{ ig.name }} access tokens expire every 90 days for security. This is expected behavior — simply re-authorize to restore the connection.
+            </p>
+            <div class="error-steps">
+              <div class="step-item"><span class="step-num">1</span> Click <strong>Reconnect now</strong> above</div>
+              <div class="step-item"><span class="step-num">2</span> Log into {{ ig.name }} when prompted</div>
+              <div class="step-item"><span class="step-num">3</span> Approve the permissions — sync will resume automatically</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding: 0">
+          <div style="padding: 16px 20px; border-bottom: 1px solid var(--color-border)">
+            <h3 class="section-title" style="margin:0">Recent sync history</h3>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Timestamp</th><th>Records</th><th>Status</th></tr></thead>
+            <tbody>
+              @for (log of syncLogs(); track log.id) {
+                <tr [class.error-row]="log.status === 'error'">
+                  <td>{{ formatTimestamp(log.timestamp) }}</td>
+                  <td>{{ log.status === 'success' ? (log.recordsProcessed | number) : '—' }}</td>
+                  <td>
+                    <span class="log-badge" [class]="syncLogStatusClass(log.status)">{{ log.status }}</span>
+                    @if (log.errorMessage) { <span class="log-error-msg"> · {{ log.errorMessage }}</span> }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  </div>
+}
