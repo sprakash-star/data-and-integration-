@@ -1,66 +1,81 @@
 <div class="page">
-  <div class="page-header">
+
+  <!-- ── TOP BAR ── -->
+  <div class="top-bar">
     <h1 class="page-title">Apps</h1>
-    <div class="header-actions">
-      <div class="search-box">
+    <div class="top-bar-actions">
+      <button class="icon-btn" aria-label="Search">
         <span class="material-icons">search</span>
-        <input type="text" placeholder="Search integrations..." [value]="searchQuery()" (input)="searchQuery.set($any($event.target).value)">
-      </div>
-      <button class="btn btn-primary">
+      </button>
+      <button class="connect-btn">
         <span class="material-icons">add</span> Connect
       </button>
     </div>
   </div>
 
-  <div class="tabs-row">
-    <nav class="tab-nav">
-      <button class="tab-btn" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">Vendasta</button>
-      <button class="tab-btn" [class.active]="activeFilter() === 'not-connected'" (click)="setFilter('not-connected')">My Apps</button>
-      <button class="tab-btn" [class.active]="activeFilter() === 'connected'" (click)="setFilter('connected')">
-        Integrations
-        @if (connectedCount() > 0) {
-          <span class="tab-count">{{ connectedCount() }}</span>
-        }
-      </button>
-    </nav>
+  <!-- ── SECTION TABS ── -->
+  <div class="tab-bar">
+    <button class="tab-item" [class.active]="activeTab() === 'vendasta'" (click)="setTab('vendasta')">Vendasta</button>
+    <button class="tab-item" [class.active]="activeTab() === 'my-apps'" (click)="setTab('my-apps')">My Apps</button>
+    <button class="tab-item" [class.active]="activeTab() === 'integrations'" (click)="setTab('integrations')">Integrations</button>
   </div>
 
+  <!-- ── SECTION HEADER ── -->
   <div class="section-header">
-    <span class="section-label">All Integrations</span>
-    <div class="filter-chips">
-      <button class="filter-chip" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
-        <span class="dot all"></span> All
+    <span class="section-title">
+      @switch (activeFilter()) {
+        @case ('connected') { Connected }
+        @case ('not-connected') { Not Connected }
+        @default { All Integrations }
+      }
+    </span>
+    <div class="filter-pills">
+      <button class="filter-pill" [class.active]="activeFilter() === 'all'" (click)="setFilter('all')">
+        <span class="pill-dot"></span> All
       </button>
-      <button class="filter-chip" [class.active]="activeFilter() === 'connected'" (click)="setFilter('connected')">Connected</button>
-      <button class="filter-chip" [class.active]="activeFilter() === 'not-connected'" (click)="setFilter('not-connected')">Not Connected</button>
+      <button class="filter-pill" [class.active]="activeFilter() === 'connected'" (click)="setFilter('connected')">Connected</button>
+      <button class="filter-pill" [class.active]="activeFilter() === 'not-connected'" (click)="setFilter('not-connected')">Not Connected</button>
     </div>
   </div>
 
-  <div class="grid">
-    @for (integration of filtered(); track integration.id) {
-      <a class="integration-card" [routerLink]="['/integrations', integration.id]">
-        <div class="card-header">
-          <div class="integration-icon" [style.background]="integration.iconBg">
-            {{ integration.icon.toUpperCase() }}
-          </div>
-          @if (integration.status !== 'not-connected') {
-            <span class="status-chip" [class]="statusClass(integration.status)">
-              {{ statusLabel(integration.status) }}
-            </span>
-          }
-        </div>
-        <div class="card-body">
-          <div class="integration-name">{{ integration.name }}</div>
-          <div class="integration-desc">{{ integration.description }}</div>
-        </div>
-      </a>
-    }
+  <!-- ── SEARCH (shown when typing) ── -->
+  <div class="search-row">
+    <div class="search-box">
+      <span class="material-icons">search</span>
+      <input type="text" placeholder="Search integrations..." [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)">
+      @if (searchQuery()) {
+        <button class="clear-search" (click)="searchQuery.set('')">
+          <span class="material-icons">close</span>
+        </button>
+      }
+    </div>
   </div>
 
-  @if (filtered().length === 0) {
+  <!-- ── GRID ── -->
+  @if (filtered().length > 0) {
+    <div class="apps-grid">
+      @for (ig of filtered(); track ig.id) {
+        <a class="picker-card" [routerLink]="['/integrations', ig.id]">
+          @if (ig.status === 'not-connected') {
+            <span class="connect-badge">Connect</span>
+          }
+          @if (ig.status === 'error') {
+            <span class="error-badge">Error</span>
+          }
+          <div class="picker-card-icon">
+            <img [src]="ig.logoUrl" [alt]="ig.name" (error)="onImgError($event, ig.name)">
+          </div>
+          <div class="picker-card-name">{{ ig.name }}</div>
+          <div class="picker-card-desc">{{ ig.description }}</div>
+        </a>
+      }
+    </div>
+  } @else {
     <div class="empty-state">
       <span class="material-icons">search_off</span>
       <p>No integrations match your search.</p>
     </div>
   }
+
 </div>

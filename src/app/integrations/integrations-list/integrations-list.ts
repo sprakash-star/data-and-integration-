@@ -1,8 +1,9 @@
 import { Component, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MOCK_INTEGRATIONS, Integration, ConnectionStatus } from '../integration.models';
+import { MOCK_INTEGRATIONS, Integration } from '../integration.models';
 
 type Filter = 'all' | 'connected' | 'not-connected';
+type SectionTab = 'vendasta' | 'my-apps' | 'integrations';
 
 @Component({
   selector: 'app-integrations-list',
@@ -13,6 +14,7 @@ type Filter = 'all' | 'connected' | 'not-connected';
 export class IntegrationsList {
   readonly allIntegrations = signal<Integration[]>(MOCK_INTEGRATIONS);
   readonly activeFilter = signal<Filter>('all');
+  readonly activeTab = signal<SectionTab>('integrations');
   readonly searchQuery = signal('');
 
   readonly filtered = computed(() => {
@@ -33,16 +35,16 @@ export class IntegrationsList {
   );
 
   setFilter(f: Filter) { this.activeFilter.set(f); }
+  setTab(t: SectionTab) { this.activeTab.set(t); }
 
-  statusLabel(status: ConnectionStatus): string {
-    if (status === 'connected') return 'Connected';
-    if (status === 'error') return 'Error';
-    return 'Connect';
-  }
-
-  statusClass(status: ConnectionStatus): string {
-    if (status === 'connected') return 'chip-connected';
-    if (status === 'error') return 'chip-error';
-    return 'chip-connect';
+  onImgError(event: Event, name: string) {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+    const parent = img.parentElement!;
+    parent.style.background = '#e0e0e0';
+    const span = document.createElement('span');
+    span.textContent = name.slice(0, 2).toUpperCase();
+    span.style.cssText = 'font-size:11px;font-weight:700;color:#616161';
+    parent.appendChild(span);
   }
 }

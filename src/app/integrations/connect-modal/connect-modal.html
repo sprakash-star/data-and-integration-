@@ -1,7 +1,7 @@
 <div class="modal-shell">
   <div class="modal-header">
     <div class="modal-title-row">
-      <div class="modal-icon" [style.background]="integration.iconBg">{{ integration.icon.toUpperCase() }}</div>
+      <div class="modal-icon" [style.background]="integration.logoColor || '#f0f0f0'"><img [src]="integration.logoUrl" [alt]="integration.name" style="width:24px;height:24px;"></div>
       <div>
         <div class="modal-title">Connect {{ integration.name }}</div>
         <div class="modal-subtitle">{{ integration.description }}</div>
