@@ -38,14 +38,13 @@
   width: 40px;
   height: 40px;
   border-radius: var(--radius-md);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  text-transform: uppercase;
+  padding: 6px;
+
+  img { width: 28px; height: 28px; object-fit: contain; }
 }
 
 .modal-title { font-size: 16px; font-weight: 600; color: var(--color-text-primary); }
@@ -221,14 +220,13 @@
   width: 52px;
   height: 52px;
   border-radius: var(--radius-md);
-  color: #fff;
-  font-size: 15px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-transform: uppercase;
   flex-shrink: 0;
+  padding: 8px;
+
+  img { width: 36px; height: 36px; object-fit: contain; }
 }
 
 .detail-name {
@@ -321,13 +319,13 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-transform: uppercase;
+  padding: 5px;
+  flex-shrink: 0;
+
+  img { width: 26px; height: 26px; object-fit: contain; }
 }
 
 .panel-title { font-size: 14px; font-weight: 600; color: var(--color-text-primary); }
@@ -443,16 +441,15 @@
 }
 
 .syncing-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-md);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
   justify-content: center;
-  text-transform: uppercase;
+  padding: 10px;
+
+  img { width: 44px; height: 44px; object-fit: contain; }
 }
 
 .syncing-title { font-size: 18px; font-weight: 600; color: var(--color-text-primary); margin: 0; }
@@ -585,14 +582,13 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  color: #fff;
-  font-size: 11px;
-  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-transform: uppercase;
   flex-shrink: 0;
+  padding: 5px;
+
+  img { width: 26px; height: 26px; object-fit: contain; }
 }
 
 .account-biz { font-size: 13px; font-weight: 600; color: var(--color-text-primary); }

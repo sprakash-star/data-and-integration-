@@ -5,7 +5,7 @@
     <div class="modal-shell" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <div class="modal-title-row">
-          <div class="modal-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+          <div class="modal-icon" [style.background]="ig.logoColor || '#f0f0f0'"><img [src]="ig.logoUrl" [alt]="ig.name"></div>
           <div>
             <div class="modal-title">Connect {{ ig.name }}</div>
             <div class="modal-subtitle">{{ ig.description }}</div>
@@ -104,7 +104,7 @@
         <div class="discovery-main">
           <div class="detail-header">
             <div class="header-identity">
-              <div class="header-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+              <div class="header-icon" [style.background]="ig.logoColor || '#f0f0f0'"><img [src]="ig.logoUrl" [alt]="ig.name"></div>
               <div>
                 <h1 class="detail-name">{{ ig.name }}</h1>
                 <p class="detail-desc">{{ ig.description }}</p>
@@ -154,7 +154,7 @@
         <div class="discovery-panel">
           <div class="action-panel card">
             <div class="action-panel-header">
-              <div class="panel-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+              <div class="panel-icon" [style.background]="ig.logoColor || '#f0f0f0'"><img [src]="ig.logoUrl" [alt]="ig.name"></div>
               <div>
                 <div class="panel-title">{{ ig.name }}</div>
                 <div class="panel-sub">Ready to connect</div>
@@ -185,7 +185,7 @@
     @if (ig.status === 'syncing') {
       <div class="syncing-layout">
         <div class="syncing-card card">
-          <div class="syncing-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+          <div class="syncing-icon" [style.background]="ig.logoColor || '#f0f0f0'"><img [src]="ig.logoUrl" [alt]="ig.name"></div>
           <h2 class="syncing-title">Setting up {{ ig.name }} integration...</h2>
           <p class="syncing-sub">We're importing your data and connecting it to AI. This usually takes 1–2 minutes.</p>
 
@@ -225,7 +225,7 @@
       <div class="connected-layout">
         <div class="detail-header connected-header">
           <div class="header-identity">
-            <div class="header-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+            <div class="header-icon" [style.background]="ig.logoColor || '#f0f0f0'"><img [src]="ig.logoUrl" [alt]="ig.name"></div>
             <div>
               <h1 class="detail-name">{{ ig.name }}</h1>
               <p class="detail-desc">{{ ig.description }}</p>
@@ -305,7 +305,7 @@
                   <h3 class="section-title">Connected account</h3>
                   <div class="card connected-account-card">
                     <div class="account-row">
-                      <div class="account-avatar" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+                      <div class="account-avatar" [style.background]="ig.logoColor || '#f0f0f0'"><img [src]="ig.logoUrl" [alt]="ig.name"></div>
                       <div>
                         <div class="account-biz">Apex Home Services</div>
                         <div class="account-meta">Connected by {{ ig.connectedBy }} · {{ ig.connectedOn }}</div>
@@ -509,7 +509,7 @@
       <div class="connected-layout">
         <div class="detail-header connected-header">
           <div class="header-identity">
-            <div class="header-icon" [style.background]="ig.iconBg">{{ ig.icon.toUpperCase() }}</div>
+            <div class="header-icon" [style.background]="ig.logoColor || '#f0f0f0'"><img [src]="ig.logoUrl" [alt]="ig.name"></div>
             <div>
               <h1 class="detail-name">{{ ig.name }}</h1>
               <p class="detail-desc">{{ ig.description }}</p>
